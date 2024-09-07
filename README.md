@@ -1,18 +1,20 @@
 # Tee Time Scraper
 
-This project is a web scraper designed to collect tee time data from various golf course websites and store it in a Firestore database. It's built to work alongside a separate user-facing tee-time booking web app.
+This project is a web scraper designed to collect tee time data from various golf course websites and store it in a PostgreSQL database. It's built to work alongside a separate user-facing tee-time booking web app.
 
 ## Features
 
-- Scrapes tee time data from multiple golf course websites
-- Stores collected data in Firestore
+- Scrapes tee time data from Mayfair Lakes golf course website
+- Stores collected data in a PostgreSQL database
 - Modular design for easy addition of new website scrapers
 - Asynchronous scraping for improved efficiency
+- Timezone-aware datetime handling for Vancouver (PST/PDT)
 
 ## Prerequisites
 
 - Python 3.7+
-- Firebase account and project set up
+- PostgreSQL database
+- Chrome browser (for Selenium WebDriver)
 
 ## Installation
 
@@ -33,11 +35,9 @@ This project is a web scraper designed to collect tee time data from various gol
    pip install -r requirements.txt
    ```
 
-4. Set up your Firestore credentials:
-   - Download your Firebase Admin SDK private key JSON file
-   - Set the environment variable `GOOGLE_APPLICATION_CREDENTIALS` to the path of this file
+4. Set up your PostgreSQL database and update the `.env` file with your database credentials.
 
-5. Copy `config.yml.example` to `config.yml` and fill in your configuration details.
+5. Copy `.env.example` to `.env` and fill in your configuration details.
 
 ## Usage
 
@@ -45,32 +45,6 @@ Run the main script to start scraping:
 
 ```
 python src/main.py
-```
-
-## Project Structure
-
-```
-tee-time-scraper/
-├── src/
-│   ├── scrapers/
-│   │   ├── __init__.py
-│   │   ├── base_scraper.py
-│   │   ├── site1_scraper.py
-│   │   └── site2_scraper.py
-│   ├── database/
-│   │   ├── __init__.py
-│   │   └── firestore_handler.py
-│   ├── utils/
-│   │   ├── __init__.py
-│   │   └── helpers.py
-│   └── main.py
-├── tests/
-│   ├── test_scrapers.py
-│   └── test_database.py
-├── requirements.txt
-├── .gitignore
-├── README.md
-└── config.yml
 ```
 
 ## Contributing
