@@ -51,6 +51,8 @@ wheels/
 
 # dotenv
 .env
+!.env.example
+secrets/
 
 # Database
 *.sqlite3
