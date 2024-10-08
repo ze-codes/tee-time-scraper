@@ -1,10 +1,5 @@
-from dotenv import load_dotenv
-load_dotenv()  # Add this at the beginning of your main.py
-
-from database.db_config import Base, engine
-
-def create_tables():
-    Base.metadata.create_all(bind=engine)
+# This file can be used for application startup logic if needed
+# For now, we'll leave it empty or with minimal content
 
 if __name__ == "__main__":
-    create_tables()
+    print("Main application file. Add startup logic here if needed.")

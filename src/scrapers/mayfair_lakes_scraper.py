@@ -29,6 +29,7 @@ class MayfairLakesScraper(BaseScraper):
         calendar_item_index = 0
         
         while True:
+        # for calendar_item_index in range(2):
             calendar_item_id = f"customcaleder_{calendar_item_index}"
             print(f"Attempting to find tee times for calendar item: {calendar_item_id}")
             
@@ -56,19 +57,7 @@ class MayfairLakesScraper(BaseScraper):
                     tee_times_found = False
                 
                 if tee_times_found:
-                    # Verify that the loaded tee times are for the correct date
-                    try:
-                        date_element = self.driver.find_element(By.CSS_SELECTOR, "span[id^='dnn_ctr1325_DefaultView_ctl01_dlTeeTimes_lblTeeDate_']")
-                        loaded_date = date_element.text
-                        expected_date = self.get_expected_date(calendar_item_index)
-                        if loaded_date != expected_date:
-                            print(f"Warning: Loaded date ({loaded_date}) does not match expected date ({expected_date})")
-                            time.sleep(2)  # Add extra delay and retry
-                            continue
-                    except NoSuchElementException:
-                        print("Warning: Could not verify the loaded date")
-
-                    # Process tee times as before
+                    # Process tee times without date verification
                     tee_time_elements = WebDriverWait(self.driver, 10).until(
                         EC.presence_of_all_elements_located((By.CSS_SELECTOR, "#dnn_ctr1325_DefaultView_ctl01_dlTeeTimes > span"))
                     )
@@ -139,6 +128,12 @@ class MayfairLakesScraper(BaseScraper):
         # Localize the naive datetime to Vancouver time
         localized_datetime = self.timezone.localize(naive_datetime)
         
+        # Convert to UTC before returning
+        utc_datetime = localized_datetime.astimezone(pytz.UTC)
+        print(
+            f"Localized datetime: {localized_datetime}, UTC datetime: {utc_datetime}"
+        )
+        
         price = float(raw_data['price'].split('$')[1].split('/')[0])
         
         availability_str = raw_data['availability'].strip()
@@ -156,10 +151,10 @@ class MayfairLakesScraper(BaseScraper):
         starting_hole = int(starting_hole) if starting_hole else 1  # Default to 1 if no digits found
         
         parsed_data = {
-            'datetime': localized_datetime.isoformat(),
+            'datetime': utc_datetime.isoformat(),
             'price': price,
             'currency': 'CAD',
-            'available_spots': availability,
+            'available_booking_sizes': availability,
             'course_name': raw_data['course_name'],
             'starting_hole': starting_hole
         }

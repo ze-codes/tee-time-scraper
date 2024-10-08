@@ -1,7 +1,25 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Enum
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Enum, ARRAY
 from sqlalchemy.orm import relationship
 from ..db_config import Base
 import enum
+from sqlalchemy.types import TypeDecorator
+from datetime import datetime, timezone
+
+class TZDateTime(TypeDecorator):
+    impl = DateTime
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            if value.tzinfo is None:
+                return value.replace(tzinfo=timezone.utc)
+            return value.astimezone(timezone.utc)
+        return value
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            return value.replace(tzinfo=timezone.utc)
+        return value
 
 class SocialLevel(enum.Enum):
     low = "low"
@@ -19,20 +37,22 @@ class Course(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
-    latitude = Column(Float)
-    longitude = Column(Float)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
+    timezone = Column(String, nullable=False, server_default="America/Vancouver")
+
+    tee_times = relationship("TeeTime", back_populates="course")
 
 class TeeTime(Base):
     __tablename__ = "tee_times"
 
     id = Column(Integer, primary_key=True, index=True)
     course_id = Column(Integer, ForeignKey("courses.id"))
-    datetime = Column(DateTime, index=True)
+    datetime = Column(TZDateTime, index=True)
     price = Column(Float)
     currency = Column(String)
-    available_spots = Column(Integer)
+    available_booking_sizes = Column(ARRAY(Integer)) 
     starting_hole = Column(Integer)
-    status = Column(String, default="available")
 
     course = relationship("Course", back_populates="tee_times")
     players = relationship("Player", back_populates="tee_time")
@@ -49,5 +69,5 @@ class Player(Base):
     handicap = Column(Enum(Handicap))
 
     tee_time = relationship("TeeTime", back_populates="players")
-
+    
 Course.tee_times = relationship("TeeTime", order_by=TeeTime.datetime, back_populates="course")
